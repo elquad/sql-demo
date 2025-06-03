@@ -1,0 +1,6 @@
+def insert_urls():
+    ...
+
+
+def insert_ip_addresses():
+    ...
