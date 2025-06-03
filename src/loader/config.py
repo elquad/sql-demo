@@ -3,9 +3,9 @@ from pydantic import PostgresDsn
 
 
 class Settings(BaseSettings):
-    dsn: PostgresDsn            # postgresql+psycopg2://user:password@host:port/dbname
-    async_mode: bool = False
+    dsn: str = "postgresql://postgres:postgres@localhost/sql-demo"
     batch_size: int = 5000
+    pool_size: int = 10
 
     model_config = SettingsConfigDict(
         env_prefix="LOADER_",
@@ -13,4 +13,7 @@ class Settings(BaseSettings):
     )
 
 
-settings = Settings()
+def load_settings(args) -> Settings:
+    """Merge CLI overrides into Pydantic Settings."""
+    cli_overrides = {k: v for k, v in vars(args).items() if v is not None}
+    return Settings(**cli_overrides)
