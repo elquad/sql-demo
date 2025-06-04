@@ -1,15 +1,19 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import PostgresDsn
+from pathlib import Path
+
+
+BASE_DIR = Path(__file__).resolve().parents[2]
 
 
 class Settings(BaseSettings):
-    dsn: str = "postgresql://postgres:postgres@localhost/sql-demo"
+    dsn: str
     batch_size: int = 5000
     pool_size: int = 10
 
     model_config = SettingsConfigDict(
         env_prefix="LOADER_",
-        env_file=".env",
+        env_file=BASE_DIR / ".env",
     )
 
 

@@ -22,9 +22,8 @@ _SessionFactory: async_sessionmaker[AsyncSession] | None = None
 
 async def init_engine(settings: Settings) -> None:
     global _engine, _SessionFactory
-
     _engine = create_async_engine(
-        f"postgresql+psycopg://{settings.dsn.lstrip('postgresql://')}",
+        f"postgresql+psycopg://{settings.dsn.removeprefix('postgresql://')}",
         pool_size=settings.pool_size,
         pool_pre_ping=True,                       # drop & replace dead conns
     )
