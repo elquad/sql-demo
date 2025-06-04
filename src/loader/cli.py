@@ -1,4 +1,3 @@
-# arg parsing, pipeline executing
 from argparse import ArgumentParser
 
 

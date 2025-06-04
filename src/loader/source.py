@@ -1,10 +1,13 @@
 import csv
 from collections.abc import AsyncIterator
 import aiohttp
-from aiocsv import AsyncDictReader
 from pydantic_core import ValidationError
+import logging
 
 from .schema import Source, UrlRow, IpAddrRow
+
+
+log = logging.getLogger(__name__)
 
 
 async def iterate_ioc_data(src: str, *, encoding: str = "utf-8") -> AsyncIterator[str]:
@@ -21,7 +24,7 @@ async def validate_url_rows(raw_lines: AsyncIterator[dict]) -> AsyncIterator[dic
         try:
             row = UrlRow(**line)
         except ValidationError as err:
-            #  log skip
+            log.warning(f"Skipped invalid row: {line}.")
             continue
         yield {"url": str(row.url), "source_id": int(row.source_id)}
 
@@ -31,7 +34,7 @@ async def validate_ip_rows(raw_lines: AsyncIterator[dict]) -> AsyncIterator[dict
         try:
             row = IpAddrRow(**line)
         except ValidationError as err:
-            #  log skip
+            log.warning(f"Skipped invalid row: {line}.")
             continue
         yield {"address": str(row.address), "source_id": int(row.source_id)}
 

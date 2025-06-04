@@ -1,4 +1,5 @@
 import sys
+import logging
 
 from .config import Settings
 from .repository import insert_urls, insert_ips
@@ -27,13 +28,18 @@ async def load_data(feed, parser, validator, inserter):
         await inserter(batch)
 
 
-async def run_pipeline(settings: Settings) -> None:
+async def run_pipeline() -> None:
+    log = logging.getLogger(__name__)
     if not await is_schema_present():
-        print("Schema missing. Run `loader init-db` first.", file=sys.stderr)
+        log.error("Database schema missing. Run `loader init-db` first.")
         sys.exit(1)
 
-
-    await load_data(FEEDS[Source.OPENPHISH], parse_openphish_data, validate_url_rows, insert_urls)
-    await load_data(FEEDS[Source.ALIENVAULT], parse_alienvault_data, validate_ip_rows, insert_ips)
-    await load_data(FEEDS[Source.ABUSE], parse_abuse_data, validate_url_rows, insert_urls)
-    print("Loaded.")
+    for source, parser, validator, inserter in [
+        (Source.OPENPHISH, parse_openphish_data, validate_url_rows, insert_urls),
+        (Source.ALIENVAULT, parse_alienvault_data, validate_ip_rows, insert_ips),
+        (Source.ABUSE, parse_abuse_data, validate_url_rows, insert_urls),
+    ]:
+        try:
+            await load_data(FEEDS[source], parser, validator, inserter)
+        except Exception as err:
+            log.exception(f"Loading into feed {source.name} failed: {err}")
