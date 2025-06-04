@@ -2,6 +2,9 @@
 Async-only database helpers backed by SQLAlchemy + psycopg3.
 """
 from __future__ import annotations
+
+from sqlalchemy import text
+
 from .config import Settings
 
 from contextlib import asynccontextmanager
@@ -23,7 +26,7 @@ _SessionFactory: async_sessionmaker[AsyncSession] | None = None
 async def init_engine(settings: Settings) -> None:
     global _engine, _SessionFactory
     _engine = create_async_engine(
-        f"postgresql+psycopg://{settings.dsn.removeprefix('postgresql://')}",
+        settings.dsn,
         pool_size=settings.pool_size,
         pool_pre_ping=True,                       # drop & replace dead conns
     )
@@ -51,3 +54,8 @@ async def get_session() -> AsyncIterator[AsyncSession]:
 async def dispose_engine() -> None:
     if _engine is not None:
         await _engine.dispose()
+
+
+async def is_schema_present():
+    async with get_session() as s:
+        return await s.scalar(text("SELECT to_regclass('url') IS NOT NULL"))

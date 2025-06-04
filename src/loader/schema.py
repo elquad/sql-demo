@@ -9,10 +9,10 @@ class Source(IntEnum):
 
 
 class UrlRow(BaseModel):
-    url:    HttpUrl
-    source: Source
+    url: HttpUrl
+    source_id: Source
 
 
 class IpAddrRow(BaseModel):
-    ip:     IPvAnyAddress
-    source: Source
+    address: IPvAnyAddress
+    source_id: Source

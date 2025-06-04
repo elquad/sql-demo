@@ -1,6 +1,6 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import PostgresDsn
 from pathlib import Path
+from .schema import Source
 
 
 BASE_DIR = Path(__file__).resolve().parents[2]
@@ -14,7 +14,15 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix="LOADER_",
         env_file=BASE_DIR / ".env",
+        extra="ignore",
     )
+
+
+FEEDS: dict[Source, str] = {
+    Source.ABUSE: "https://urlhaus.abuse.ch/downloads/csv_recent/",
+    Source.ALIENVAULT: "http://reputation.alienvault.com/reputation.data",
+    Source.OPENPHISH: "https://openphish.com/feed.txt",
+}
 
 
 def load_settings(args) -> Settings:
