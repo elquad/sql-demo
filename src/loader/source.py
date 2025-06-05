@@ -10,13 +10,31 @@ from .schema import Source, UrlRow, IpAddrRow
 log = logging.getLogger(__name__)
 
 
-async def iterate_ioc_data(src: str, *, encoding: str = "utf-8") -> AsyncIterator[str]:
+async def iterate_ioc_data(
+    src: str,
+    *,
+    encoding: str = "utf-8",
+    chunk_size: int = 4096
+) -> AsyncIterator[str]:
     async with aiohttp.ClientSession() as session:
         async with session.get(src) as response:
             response.raise_for_status()
-            async for chunk in response.content:
-                if chunk:
-                    yield chunk.decode(encoding).rstrip("\n")
+
+            buffer = ""
+            async for chunk in response.content.iter_chunked(chunk_size):
+                if not chunk:
+                    continue
+
+                buffer += chunk.decode(encoding)
+                *lines, buffer = buffer.splitlines(keepends=False)  # buffer will contain potentially unfinished line
+
+                for line in lines:
+                    if line:
+                        yield line
+
+            # flush tail if the file didn't end with '\n'
+            if buffer:
+                yield buffer
 
 
 async def validate_url_rows(raw_lines: AsyncIterator[dict]) -> AsyncIterator[dict]:
