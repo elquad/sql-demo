@@ -12,7 +12,6 @@ from .config import FEEDS
 from .db import is_schema_present
 
 
-BATCH = 5000
 log = logging.getLogger(__name__)
 
 
@@ -20,7 +19,8 @@ async def load_data(
     feed: str,
     parser: Callable[[AsyncIterable[str]], AsyncIterable[dict[str, Any]]],
     validator: Callable[[AsyncIterable[dict[str, Any]]], AsyncIterable[dict[str, Any]]],
-    inserter: Callable[[list[dict[str, Any]]], Awaitable[None]]
+    inserter: Callable[[list[dict[str, Any]]], Awaitable[None]],
+    batch_size: int
 ) -> None:
     raw_lines = iterate_ioc_data(feed)
     parsed = parser(raw_lines)
@@ -30,7 +30,7 @@ async def load_data(
     inserted = 0
     async for row in validated:
         batch.append(row)
-        if len(batch) == BATCH:
+        if len(batch) == batch_size:
             inserted += await inserter(batch)   # uses ON CONFLICT DO NOTHING
             batch.clear()
     if batch:
@@ -38,7 +38,7 @@ async def load_data(
     log.info(f"Inserted {inserted} rows from {str(feed)}")
 
 
-async def run_pipeline() -> None:
+async def run_pipeline(settings: Settings) -> None:
     if not await is_schema_present():
         log.error("Database schema missing. Run `loader init-db` first.")
         sys.exit(1)
@@ -49,6 +49,6 @@ async def run_pipeline() -> None:
         (Source.ABUSE, parse_abuse_data, validate_url_rows, insert_urls),
     ]:
         try:
-            await load_data(FEEDS[source], parser, validator, inserter)
+            await load_data(FEEDS[source], parser, validator, inserter, settings.batch_size)
         except Exception as err:
             log.exception(f"Loading into feed {source.name} failed: {err}")

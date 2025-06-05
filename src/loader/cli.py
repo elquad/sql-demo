@@ -12,6 +12,6 @@ def get_args() -> Namespace:
     init_cmd.add_argument("--dsn")
 
     parser.add_argument("--dsn", help="DSN connection string")
-    parser.add_argument("--batch-size", type=int)
+    parser.add_argument("--batch-size", type=int, help="Batch size for DB insertion (defaults to 5000)")
 
     return parser.parse_args()

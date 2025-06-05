@@ -28,7 +28,7 @@ async def main() -> None:
         sys.exit(0)
 
     await init_engine(settings)
-    await run_pipeline()
+    await run_pipeline(settings)
     log.info("Ended successfully.")
 
 
