@@ -18,8 +18,8 @@ Pydantic, aiohttp, streaming, typed config, zero-dependency logging.
 | **AlienVault** <br>reputation IPs         | `ip`  | `IpAddrRow` (`IPvAnyAddress`)     | same                              |
 | **abuse.ch URLhaus** <br>malicious URLs   | `url` | `UrlRow`                          | same                              |
 
-* Streaming download (`aiohttp`, `aiofiles`) → per-row Pydantic v2 validation → batch of 5000 rows → single INSERT.
-* Duplicate URLs/IPs are silently skipped by Postgres (`UNIQUE + ON CONFLICT DO NOTHING`).
+* Streaming download (`aiohttp`) → per-row Pydantic v2 validation → batch of 5000 rows → INSERT.
+* Duplicate URLs/IPs are silently skipped by Postgres (`UNIQUE + ON CONFLICT DO NOTHING`), inserted row count is logged.
 
 ---
 

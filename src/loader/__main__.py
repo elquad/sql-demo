@@ -1,5 +1,5 @@
 import sys
-
+import asyncio
 from pydantic import ValidationError
 import logging
 
@@ -31,6 +31,10 @@ async def main() -> None:
     await run_pipeline()
     log.info("Ended successfully.")
 
+
+def sync_main() -> None:  # entry-point for console script
+    asyncio.run(main())
+
+
 if __name__ == "__main__":
-    import asyncio
     asyncio.run(main())
