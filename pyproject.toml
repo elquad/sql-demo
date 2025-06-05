@@ -25,6 +25,12 @@ dependencies = [
   "pydantic-settings>=2.2",
 ]
 
+[project.optional-dependencies]       # enables “pip install .[dev]”
+dev = [
+  "pytest>=8",
+  "pytest-asyncio>=1",
+]
+
 [project.scripts]
 loader = "loader.__main__:sync_main"
 
