@@ -1,5 +1,7 @@
 import sys
 import logging
+from collections.abc import Callable
+from typing import AsyncIterable, Any, Awaitable
 
 from .config import Settings
 from .repository import insert_urls, insert_ips
@@ -13,7 +15,13 @@ from .db import is_schema_present
 BATCH = 5000
 
 
-async def load_data(feed, parser, validator, inserter):
+
+async def load_data(
+    feed: str,
+    parser: Callable[[AsyncIterable[str]], AsyncIterable[dict[str, Any]]],
+    validator: Callable[[AsyncIterable[dict[str, Any]]], AsyncIterable[dict[str, Any]]],
+    inserter: Callable[[list[dict[str, Any]]], Awaitable[None]]
+) -> None:
     raw_lines = iterate_ioc_data(feed)
     parsed = parser(raw_lines)
     validated = validator(parsed)

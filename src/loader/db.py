@@ -56,6 +56,6 @@ async def dispose_engine() -> None:
         await _engine.dispose()
 
 
-async def is_schema_present():
+async def is_schema_present() -> bool:
     async with get_session() as s:
         return await s.scalar(text("SELECT to_regclass('url') IS NOT NULL"))

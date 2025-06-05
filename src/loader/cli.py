@@ -1,7 +1,7 @@
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 
 
-def get_args():
+def get_args() -> Namespace:
     parser = ArgumentParser(
         prog="loader", description="Loads IOC data (URL, IP addresses) from predefined sources. "
                                    "Run with 'init-db' first to ensure database schema."
