@@ -13,7 +13,7 @@ from .db import is_schema_present
 
 
 BATCH = 5000
-
+log = logging.getLogger(__name__)
 
 
 async def load_data(
@@ -27,17 +27,18 @@ async def load_data(
     validated = validator(parsed)
 
     batch: list[dict] = []
+    inserted = 0
     async for row in validated:
         batch.append(row)
         if len(batch) == BATCH:
-            await inserter(batch)   # uses ON CONFLICT DO NOTHING
+            inserted += await inserter(batch)   # uses ON CONFLICT DO NOTHING
             batch.clear()
     if batch:
-        await inserter(batch)
+        inserted += await inserter(batch)
+    log.info(f"Inserted {inserted} rows from {str(feed)}")
 
 
 async def run_pipeline() -> None:
-    log = logging.getLogger(__name__)
     if not await is_schema_present():
         log.error("Database schema missing. Run `loader init-db` first.")
         sys.exit(1)
